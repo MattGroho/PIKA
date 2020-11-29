@@ -1,7 +1,7 @@
+import matplotlib.pyplot as plt
+
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Conv2D, MaxPool2D , Flatten
-
-import matplotlib.pyplot as plt
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.layers import Dropout
 from tensorflow.keras.layers import BatchNormalization
@@ -72,13 +72,7 @@ class AlexNet:
 
         return model
 
-    def load(self, model):
-        model.compile(loss='categorical_crossentropy',
-                      optimizer=SGD(lr=0.001),
-                      metrics=['accuracy'])
-
+    def evaluate(self, model):
         score = model.evaluate(self.test_gen, verbose=0)
 
         print('%s: %.2f%%' % (model.metrics_names[1], score[1] * 100))
-
-        return model

@@ -1,6 +1,7 @@
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 from PIL import Image
 from sklearn.metrics import accuracy_score
@@ -67,7 +68,7 @@ def normalize_img(img):
     return img
 
 
-def remove_transparency(img_path):
+def remove_transparency(img_path, shape):
     img = open(img_path)
     y, x = np.nonzero(img[:, :, 3])  # get the nonzero alpha coordinates
     minx = np.min(x)
@@ -76,7 +77,7 @@ def remove_transparency(img_path):
     maxy = np.max(y)
 
     crop = (minx, miny, maxx, maxy)
-    return open_convert(img_path, (277, 277), crop)
+    return open_convert(img_path, shape, crop)
 
 
 def open(img_path):
@@ -111,3 +112,17 @@ def open_convert(img_path, shape, crop=None):
 
     # Return resized img
     return img
+
+
+# Returns a list of all pokedex images
+def load_pokedex_images(pokedex_dir, pokedex, max_pkmn):
+    images = []
+
+    for pkmn in pokedex.all_f_names()[:max_pkmn]:
+        pkmn += '.jpg'
+        if pkmn not in os.listdir(pokedex_dir):
+            print("ERROR: Missing image folder for: " + pkmn)
+            exit(1)
+        images.append(open(os.path.join(pokedex_dir, pkmn)))
+
+    return images

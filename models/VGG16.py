@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
+import tensorflow as tf
 
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.applications.vgg16 import VGG16
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.layers import Dropout
 
@@ -18,7 +18,7 @@ class VGG16:
 
     def train(self):
         # Train VGG16 ontop of imagenet
-        prior = VGG16(
+        prior = tf.keras.applications.vgg16.VGG16(
             include_top=False,
             weights='imagenet',
             input_shape=(224, 224, 3)

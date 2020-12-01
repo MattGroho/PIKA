@@ -1,19 +1,11 @@
-from kivy.app import App
 from kivy.clock import Clock
-from kivy.uix.anchorlayout import AnchorLayout
-from kivy.uix.button import Button
-from kivy.uix.camera import Camera
-from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.label import Label
 from kivy.core.window import Window
 from kivy.lang import Builder
 from kivy.uix.screenmanager import Screen, ScreenManager
-from kivy.uix.scrollview import ScrollView
-from kivymd.uix.list import OneLineListItem, MDList, OneLineAvatarListItem, IconLeftWidget
+from kivymd.uix.list import OneLineAvatarListItem, IconLeftWidget
 from kivymd.uix.screen import Screen
 from kivymd.app import MDApp
 
-from app.DexWidget import DexWidget
 from helper import remove_transparency, val_to_key
 
 Window.size = (300, 500)
@@ -22,6 +14,7 @@ screen_helper = """
 ScreenManager:
     DexScreen:
     CamScreen:
+    PokeScreen:
 
 <DexScreen>:
     name: 'dex'
@@ -55,6 +48,25 @@ ScreenManager:
                 icon: 'camera'
                 on_action_button: app.capture()
                 left_action_items: [['backburger', lambda x: app.change_screen('dex')]]
+<PokeScreen>:
+    name: 'poke'
+    BoxLayout:
+        orientation: 'vertical'
+        MDFloatLayout:
+            Image:
+                id: image
+                pos_hint: {"x":0, "y":0.25}
+                keep_ratio: True
+                source: "/Users/handw/PycharmProjects/PIKA/PokeDex/images/bulbasaur.jpg"
+            Label:
+                id: name
+                pos_hint: {"x":0, "y":-0.05}
+                text: 'Bulbasaur'
+                color: 0,0,0,1
+                font_size: '20dp'
+        MDBottomAppBar:
+            MDToolbar:
+                left_action_items: [['backburger', lambda x: app.change_screen('dex')]]
 """
 
 
@@ -66,17 +78,28 @@ class CamScreen(Screen):
     pass
 
 
+class PokeScreen(Screen):
+    pass
+
+
 sm = ScreenManager()
 sm.add_widget(DexScreen(name='dex'))
 sm.add_widget(CamScreen(name='cam'))
+sm.add_widget(PokeScreen(name='poke'))
+
+
+class PokeList(OneLineAvatarListItem):
+    def on_press(self):
+        sm.open_poke()
 
 
 class MainApp(MDApp):
-    def __init__(self, model, pokedex, pokedex_dir, num_pkmn, target_size, **kwargs):
+    def __init__(self, model, pokedex, pokedex_dir, label_dict, num_pkmn, target_size, **kwargs):
         # Create a model object
         self.model = model
         self.pokedex = pokedex
         self.pokedex_dir = pokedex_dir
+        self.label_dict = label_dict
         self.num_pkmn = num_pkmn
         self.target_size = target_size
         # Create a camera object
@@ -101,17 +124,20 @@ class MainApp(MDApp):
     def post_init(self, *args):
         for i in range(0, self.num_pkmn):
             pkmn_name = self.pokedex.getName(i)
+            pkmn_file = self.pokedex_dir + pkmn_name + '.jpg'
 
             # self.pokedex_dir + pkmn_name + '.jpg'
-            pkmn_item = OneLineAvatarListItem(text=str(i+1) + ') ' + pkmn_name)
-            pkmn_item.add_widget(IconLeftWidget(icon=self.pokedex_dir + pkmn_name + '.jpg'))
+            pkmn_item = OneLineAvatarListItem(text=str(i + 1) + ') ' + pkmn_name)
+            pkmn_item.bind(on_release=lambda x, value=(pkmn_name, pkmn_file): self.open_poke(value))
+            pkmn_item.add_widget(IconLeftWidget(icon=pkmn_file))
             self.root.get_screen('dex').ids.container.add_widget(pkmn_item)
 
-    def navigation_draw(self):
-        print("Navigation")
+        self.root.get_screen('cam').ids.camera.resolution = self.target_size
 
-    def activate_camera_menu(self):
-        print("Activating camera")
+    def open_poke(self, pkmn_info):
+        self.root.get_screen('poke').ids.name.text = pkmn_info[0]
+        self.root.get_screen('poke').ids.image.source = pkmn_info[1]
+        self.change_screen('poke')
 
     def change_screen(self, screen):
         self.root.current = screen
@@ -124,6 +150,8 @@ class MainApp(MDApp):
         img = remove_transparency(save_dir, self.target_size)
 
         y_pred = self.model.predict(img.reshape(1, self.target_size[0], self.target_size[1], 3))
-        pkmn_name = self.pokedex.getName(y_pred[0].argmax())
+        pkmn_name = val_to_key(self.label_dict, y_pred[0].argmax())
+        #pkmn_name = self.pokedex.getName(y_pred[0].argmax())
 
-        print(pkmn_name)
+        pkmn_file = self.pokedex_dir + pkmn_name + '.jpg'
+        self.open_poke((pkmn_name, pkmn_file))

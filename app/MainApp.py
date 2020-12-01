@@ -1,7 +1,7 @@
 from kivy.clock import Clock
 from kivy.core.window import Window
 from kivy.lang import Builder
-from kivy.uix.screenmanager import Screen, ScreenManager
+from kivy.uix.screenmanager import ScreenManager
 from kivymd.uix.list import OneLineAvatarListItem, IconLeftWidget
 from kivymd.uix.screen import Screen
 from kivymd.app import MDApp
@@ -64,8 +64,52 @@ ScreenManager:
                 text: 'Bulbasaur'
                 color: 0,0,0,1
                 font_size: '20dp'
+            Label:
+                id: type1
+                pos_hint: {"x":0, "y":-0.12}
+                text: 'Grass'
+                color: 0,0,0,1
+                font_size: '20dp'
+            Label:
+                id: type2
+                pos_hint: {"x":-0.2, "y":-0.12}
+                text: 'Grass'
+                color: 0,0,0,1
+                font_size: '20dp'
+            Label:
+                id: type3
+                pos_hint: {"x":0.2, "y":-0.12}
+                text: 'Poison'
+                color: 0,0,0,1
+                font_size: '20dp'
+            Label:
+                id: height
+                pos_hint: {"x":-0.2, "y":-0.18}
+                text: 'H: 0.7m'
+                color: 0,0,0,1
+                font_size: '20dp'
+            Label:
+                id: weight
+                pos_hint: {"x":0.2, "y":-0.18}
+                text: 'W: 6.9kg'
+                color: 0,0,0,1
+                font_size: '20dp'
+            TextInput:
+                id: desc
+                pos_hint: {"x":0, "y":-0.75}
+                text: 'Desc'
+                color: 0,0,0,1
+                font_size: '20dp'
+                multiline: True
+                readonly: True
+                keyboard_mode: 'managed'
+                disabled: True
         MDBottomAppBar:
             MDToolbar:
+                mode: 'end'
+                type: 'bottom'
+                icon: 'camera'
+                on_action_button: root.manager.current = 'cam'
                 left_action_items: [['backburger', lambda x: app.change_screen('dex')]]
 """
 
@@ -94,19 +138,14 @@ class PokeList(OneLineAvatarListItem):
 
 
 class MainApp(MDApp):
-    def __init__(self, model, pokedex, pokedex_dir, label_dict, num_pkmn, target_size, **kwargs):
-        # Create a model object
+    def __init__(self, model, df, pokedex, pokedex_dir, label_dict, num_pkmn, target_size, **kwargs):
         self.model = model
+        self.df = df
         self.pokedex = pokedex
         self.pokedex_dir = pokedex_dir
         self.label_dict = label_dict
         self.num_pkmn = num_pkmn
         self.target_size = target_size
-        # Create a camera object
-        # self.cameraObject = Camera(play=False)
-
-        # Create a label object
-        # self.label = Label(text='Prediction: ', font_size='20sp', color=[0, 0, 0])
 
         super().__init__(**kwargs)
 
@@ -116,27 +155,56 @@ class MainApp(MDApp):
         screen = Builder.load_string(screen_helper)
 
         # return the root widget
-        return screen   # DexWidget(self.pokedex, self.pokedex_dir, self.num_pkmn)
+        return screen
 
     def on_start(self):
+        # Schedule post_init event after all screens are setup
         Clock.schedule_once(self.post_init, 0)
 
     def post_init(self, *args):
+        # Set correct resolution for camera
+        self.root.get_screen('cam').ids.camera.resolution = self.target_size
+
+        # Add all Pokemon to PokeDex screen
         for i in range(0, self.num_pkmn):
             pkmn_name = self.pokedex.getName(i)
             pkmn_file = self.pokedex_dir + pkmn_name + '.jpg'
 
-            # self.pokedex_dir + pkmn_name + '.jpg'
             pkmn_item = OneLineAvatarListItem(text=str(i + 1) + ') ' + pkmn_name)
             pkmn_item.bind(on_release=lambda x, value=(pkmn_name, pkmn_file): self.open_poke(value))
             pkmn_item.add_widget(IconLeftWidget(icon=pkmn_file))
+
             self.root.get_screen('dex').ids.container.add_widget(pkmn_item)
 
-        self.root.get_screen('cam').ids.camera.resolution = self.target_size
-
     def open_poke(self, pkmn_info):
-        self.root.get_screen('poke').ids.name.text = pkmn_info[0]
-        self.root.get_screen('poke').ids.image.source = pkmn_info[1]
+        ids = self.root.get_screen('poke').ids
+        ids.name.text = pkmn_info[0]
+        ids.image.source = pkmn_info[1]
+
+        print(self.df.head())
+        pkmn_df = self.df[self.df['Name'] == pkmn_info[0]].iloc[0]
+
+        print(pkmn_df)
+        num_types = pkmn_df['Types']
+        print(str(num_types))
+        types = (pkmn_df['Type1'], pkmn_df['Type2'])
+        height = pkmn_df['Height(m)']
+        weight = pkmn_df['Weight(kg)']
+        desc = pkmn_df['Description']
+
+        if num_types == 1:
+            ids.type1.text = types[0]
+            ids.type2.text = ''
+            ids.type3.text = ''
+        else:
+            ids.type1.text = ''
+            ids.type2.text = types[0]
+            ids.type3.text = types[1]
+
+        ids.height.text = 'H: ' + str(height) + 'm'
+        ids.weight.text = 'W: ' + str(weight) + 'kg'
+        ids.desc.text = desc
+
         self.change_screen('poke')
 
     def change_screen(self, screen):

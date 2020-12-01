@@ -1,3 +1,5 @@
+import pandas as pd
+
 from tensorflow.python.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.python.keras.saving.save import load_model
 
@@ -13,9 +15,10 @@ def main():
 
     # Define final variables
     data_dir = '/Users/handw/Desktop/pkmn'
-    pokedex_dir = '/Users/handw/PycharmProjects/PIKA/PokeDex/images/'
-    saved_model_dir = '/Users/handw/PycharmProjects/PIKA/models/saved/AlexNet/model_epoch_255' if model_type == 'AlexNet' \
-        else '/Users/handw/PycharmProjects/PIKA/models/saved/VGG16/model_epoch_122'
+    pokemon_dir = '/Users/handw/PycharmProjects/PIKA/'
+    pokedex_dir = pokemon_dir + 'PokeDex/images/'
+    saved_model_dir = pokemon_dir + 'models/saved/AlexNet/model_epoch_255' if model_type == 'AlexNet' \
+        else pokemon_dir + 'models/saved/VGG16/model_epoch_122'
 
     # Create target_size based on model_type chosen
     target_size = (277, 277) if model_type == 'AlexNet' else (224, 224)
@@ -59,7 +62,9 @@ def main():
     else:
         loaded_model = load_model(saved_model_dir)
 
-        app = MainApp(loaded_model, pokedex, pokedex_dir, label_dict, train_gen.num_classes, target_size)
+        df = pd.read_csv(pokemon_dir + 'PokeDex/Pokemon Info.csv', encoding="ISO-8859-1")
+
+        app = MainApp(loaded_model, df, pokedex, pokedex_dir, label_dict, train_gen.num_classes, target_size)
         app.run()
 
 

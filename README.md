@@ -6,7 +6,7 @@
 
 ## Features
 * Dataset creation based on Bing and Google scraping results
-  * A link to the Kaggle dataset will be posted: **COMING SOON**
+  * A link to the Kaggle dataset [HERE](https://www.kaggle.com/matthewgrohotolski/first-25-pokemon-images)
   * Utilizes ImageDataGenerator to further expand dataset through code
 * Classify Pokemon based on input images
   * Utilizes AlexNet for classification

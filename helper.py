@@ -2,6 +2,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import seaborn as sns
 
 from PIL import Image
 from sklearn.metrics import accuracy_score
@@ -19,12 +20,42 @@ def val_to_key(dict, val):
   return list(dict.keys())[val]
 
 
-def show_test(model, ml):
+def convert_file_names(pokedex, max_pkmn):
+    dir = "C:/Users/handw/Desktop/test/pokemon-organized"
+    for pkmn in pokedex.all_f_names()[:max_pkmn]:
+        pkmn_dir = dir + '/' + pkmn
+        counter = 0
+        for img in sorted(os.listdir(pkmn_dir)):
+            pkmn_img_file = pkmn_dir + '/' + img
+            os.rename(pkmn_img_file, pkmn_dir + '/' + str(counter) + pkmn_img_file[-4:])
+            print(pkmn_img_file)
+            counter += 1
+
+##### EDA #####
+
+
+def show_fact(model, ml):
+    images, labels = model.test_gen.next()
+    label_dict = model.test_gen.class_indices
+
+    fig, axes = plt.subplots(4, 6)
+
+    for x in range(len(axes)):
+        for y in range(len(axes[x])):
+            axes[x, y].set_title("Fact: " + val_to_key(label_dict, labels[len(axes[x]) * x + y].argmax()))
+            axes[x, y].imshow(images[len(axes[x]) * x + y])
+
+    plt.tight_layout()
+    plt.get_current_fig_manager().window.state('zoomed')
+    plt.show()
+
+
+def show_fact_pred(model, ml):
     images, labels = model.test_gen.next()
     label_dict = model.test_gen.class_indices
     y_pred = ml.predict(images)
 
-    fig, axes = plt.subplots(5, 10)
+    fig, axes = plt.subplots(4, 6)
     plt.suptitle('Batch Accuracy: %f\nPrediction | Fact' % accuracy_score(labels.argmax(axis=1), y_pred.argmax(axis=1)))
 
     for x in range(len(axes)):
@@ -33,8 +64,32 @@ def show_test(model, ml):
                                  + " | " + val_to_key(label_dict, labels[len(axes[x]) * x + y].argmax()))
             axes[x, y].imshow(images[len(axes[x]) * x + y])
 
+    plt.tight_layout()
     plt.get_current_fig_manager().window.state('zoomed')
     plt.show()
+
+
+def get_image_counts(pokedex, max_pkmn):
+    dir = "C:/Users/handw/Desktop/pkmn"
+    pkmn_array = pokedex.all_f_names()[:max_pkmn]
+    count_array = []
+    for pkmn in pkmn_array:
+        pkmn_dir = dir + '/' + pkmn
+        counter = 0
+        for img in sorted(os.listdir(pkmn_dir)):
+            counter += 1
+
+        count_array.append(counter)
+
+    return pkmn_array, count_array
+
+
+def plot_image_counts(pokedex, max_pkmn):
+    pkmn_array, count_array = get_image_counts(pokedex, max_pkmn)
+    sns.barplot(x=pkmn_array, y=count_array)
+
+
+### END OF EDA ###
 
 
 # Convert an image to a jpeg

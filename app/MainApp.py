@@ -181,12 +181,9 @@ class MainApp(MDApp):
         ids.name.text = pkmn_info[0]
         ids.image.source = pkmn_info[1]
 
-        print(self.df.head())
         pkmn_df = self.df[self.df['Name'] == pkmn_info[0]].iloc[0]
 
-        print(pkmn_df)
         num_types = pkmn_df['Types']
-        print(str(num_types))
         types = (pkmn_df['Type1'], pkmn_df['Type2'])
         height = pkmn_df['Height(m)']
         weight = pkmn_df['Weight(kg)']

@@ -1,11 +1,10 @@
 import matplotlib.pyplot as plt
-import tensorflow as tf
 
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import ModelCheckpoint
-from tensorflow.keras.layers import Dropout
+from tensorflow.python.keras.layers import MaxPool2D, Conv2D
 
 
 class VGG16:
@@ -17,27 +16,29 @@ class VGG16:
         self.test_gen = test_gen
 
     def train(self):
-        # Train VGG16 ontop of imagenet
-        prior = tf.keras.applications.vgg16.VGG16(
-            include_top=False,
-            weights='imagenet',
-            input_shape=(224, 224, 3)
-        )
         model = Sequential()
-        model.add(prior)
+        model.add(Conv2D(input_shape=(224, 224, 3), filters=64, kernel_size=(3, 3), padding="same", activation="relu"))
+        model.add(Conv2D(filters=64, kernel_size=(3, 3), padding="same", activation="relu"))
+        model.add(MaxPool2D(pool_size=(2, 2), strides=(2, 2)))
+        model.add(Conv2D(filters=128, kernel_size=(3, 3), padding="same", activation="relu"))
+        model.add(Conv2D(filters=128, kernel_size=(3, 3), padding="same", activation="relu"))
+        model.add(MaxPool2D(pool_size=(2, 2), strides=(2, 2)))
+        model.add(Conv2D(filters=256, kernel_size=(3, 3), padding="same", activation="relu"))
+        model.add(Conv2D(filters=256, kernel_size=(3, 3), padding="same", activation="relu"))
+        model.add(Conv2D(filters=256, kernel_size=(3, 3), padding="same", activation="relu"))
+        model.add(MaxPool2D(pool_size=(2, 2), strides=(2, 2)))
+        model.add(Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu"))
+        model.add(Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu"))
+        model.add(Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu"))
+        model.add(MaxPool2D(pool_size=(2, 2), strides=(2, 2)))
+        model.add(Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu"))
+        model.add(Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu"))
+        model.add(Conv2D(filters=512, kernel_size=(3, 3), padding="same", activation="relu"))
+        model.add(MaxPool2D(pool_size=(2, 2), strides=(2, 2)))
         model.add(Flatten())
-        model.add(Dense(256, activation='relu'))
-        model.add(Dense(256, activation='relu'))
-        model.add(Dropout(0.25, name='Dropout_Regularization'))
-        model.add(Dense(256, activation='relu'))
-        model.add(Dropout(0.75, name='Final_Regularization'))
-        model.add(Dense(self.train_gen.num_classes, activation='softmax', name='Output'))
-
-        # Freeze the VGG16 models, e.g. do not train any of its weights.
-        # We will just use it as-is.
-        for cnn_block_layer in model.layers[0].layers:
-            cnn_block_layer.trainable = False
-        model.layers[0].trainable = False
+        model.add(Dense(units=4096, activation="relu"))
+        model.add(Dense(units=4096, activation="relu"))
+        model.add(Dense(units=self.train_gen.num_classes, activation="softmax"))
 
         model.compile(
             optimizer=Adam(lr=0.001),

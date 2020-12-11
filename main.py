@@ -75,13 +75,12 @@ def main():
         model.train()
     else:
         loaded_model = load_model(saved_model_dir)
-        show_fact(model, loaded_model)
 
         # Load pokemon info dataset
-        #df = pd.read_csv(pokemon_dir + 'PokeDex/Pokemon Info.csv', encoding="ISO-8859-1")
+        df = pd.read_csv(pokemon_dir + 'PokeDex/Pokemon Info.csv', encoding="ISO-8859-1")
 
-        #app = MainApp(loaded_model, df, pokedex, pokedex_dir, label_dict, train_gen.num_classes, target_size)
-        #app.run()
+        app = MainApp(loaded_model, df, pokedex, pokedex_dir, label_dict, train_gen.num_classes, target_size)
+        app.run()
 
 
 main()

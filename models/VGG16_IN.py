@@ -39,14 +39,17 @@ class VGG16_IN:
             cnn_block_layer.trainable = False
         model.layers[0].trainable = False
 
+        # Compile model
         model.compile(
             optimizer=Adam(lr=0.001),
             loss='categorical_crossentropy',
             metrics=['accuracy']
         )
 
+        # List a summary of the model
         model.summary()
 
+        # Create callbacks to save top performing model epochs
         callbacks = [
             ModelCheckpoint(
                 filepath="models/saved/VGG16_IN/model_epoch_{epoch}",
@@ -56,6 +59,7 @@ class VGG16_IN:
             )
         ]
 
+        # Fit and train the model
         hist = model.fit(
             self.train_gen,
             steps_per_epoch=self.train_gen.samples // self.batch_size,
@@ -64,6 +68,7 @@ class VGG16_IN:
             epochs=self.epochs,
             callbacks=callbacks)
 
+        # Plot the model into history graph
         plt.plot(hist.history["accuracy"])
         plt.plot(hist.history['val_accuracy'])
         plt.plot(hist.history['loss'])

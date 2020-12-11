@@ -6,7 +6,7 @@ from kivymd.uix.list import OneLineAvatarListItem, IconLeftWidget
 from kivymd.uix.screen import Screen
 from kivymd.app import MDApp
 
-from helper import remove_transparency, val_to_key
+from helper import val_to_key, preprocess_img
 
 Window.size = (300, 500)
 
@@ -212,7 +212,7 @@ class MainApp(MDApp):
         self.root.get_screen('cam').ids.camera.export_to_png(save_dir)
         print("Saved capture image to %s" % save_dir)
 
-        img = remove_transparency(save_dir, self.target_size)
+        img = preprocess_img(save_dir, self.target_size)
 
         y_pred = self.model.predict(img.reshape(1, self.target_size[0], self.target_size[1], 3))
         pkmn_name = val_to_key(self.label_dict, y_pred[0].argmax())

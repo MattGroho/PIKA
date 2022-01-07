@@ -2,8 +2,6 @@
   <img src="https://i.imgur.com/qJwelkj.png" width="350" height="350">
 </p>
 
----
-
 ## Features
 * Dataset creation based on Bing and Google scraping results
   * A link to the Kaggle dataset [HERE](https://www.kaggle.com/matthewgrohotolski/first-25-pokemon-images)
@@ -14,6 +12,12 @@
   * Runs pre-trained AlexNet neural network on images taken with the phone camera
 
 ---
+## App Screenshots
+<p align="center">
+  <img src="https://i.imgur.com/DskuxTZ.png" width="350">
+  <img src="https://i.imgur.com/yOanizo.png" width="350"></center>
+</p>
 
- ## Installation Instructions
- ## COMING SOON
+---
+## Installation Instructions
+COMING SOON...
